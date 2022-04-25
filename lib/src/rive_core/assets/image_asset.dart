@@ -12,17 +12,31 @@ class ImageAsset extends ImageAssetBase {
   ui.Image? _image;
   ui.Image? get image => _image;
 
+  /// A list of Images that need to know when the underlying bytes have been
+  ///   successfully decoded.
+  List<Image>? _decodeListeners;
+
   ImageAsset();
 
   @visibleForTesting
   ImageAsset.fromTestImage(this._image);
 
+  /// Registers [asset] to know when these image bytes have been decoded.
+  void addDecodeListener(Image asset) {
+    (_decodeListeners ??= []).add(asset);
+  }
+
   @override
   Future<void> decode(Uint8List bytes) {
-    var completer = Completer<void>();
+    final completer = Completer<void>();
     ui.decodeImageFromList(bytes, (value) {
       _image = value;
       completer.complete();
+
+      // Tell listeners that the image is ready to be drawn: mark them dirty.
+      _decodeListeners
+        ?..forEach((e) => e.context.markNeedsAdvance())
+        ..clear();
     });
     return completer.future;
   }

@@ -38,8 +38,9 @@ class Image extends ImageBase
 
   @override
   void draw(ui.Canvas canvas) {
-    var uiImage = asset?.image;
+    final uiImage = asset?.image;
     if (uiImage == null) {
+      print('No image yet?! ${asset?.name} $uiImage');
       return;
     }
     bool clipped = clip(canvas);
@@ -85,7 +86,6 @@ class Image extends ImageBase
     }
   }
 
-
   @override
   int get assetIdPropertyKey => ImageBase.assetIdPropertyKey;
 
@@ -101,6 +101,9 @@ class Image extends ImageBase
   void copy(covariant Image source) {
     super.copy(source);
     asset = source.asset;
+    if (asset?.image == null) {
+      asset?.addDecodeListener(this);
+    }
   }
 
   @override
